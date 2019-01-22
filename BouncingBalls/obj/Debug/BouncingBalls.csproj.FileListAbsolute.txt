@@ -1,0 +1,9 @@
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\bin\Debug\BouncingBalls.exe
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\bin\Debug\BouncingBalls.pdb
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\bin\Debug\sfmlnet-audio-2.dll
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\bin\Debug\sfmlnet-graphics-2.dll
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\bin\Debug\sfmlnet-system-2.dll
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\bin\Debug\sfmlnet-window-2.dll
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.csprojResolveAssemblyReference.cache
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.exe
+C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.pdb
