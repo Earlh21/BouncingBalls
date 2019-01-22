@@ -255,10 +255,17 @@ namespace BouncingBalls
 
         public void Draw(RenderWindow window)
         {
-            CircleShape shape = new CircleShape((float)radius);
-            shape.Position = new Vector2f((float)Position.X, (float)Position.Y);
+            CircleShape shape = new CircleShape((float)radius * 100);
+            shape.Position = new Vector2f((float)Position.X, (float)Position.Y) * 100;
             shape.FillColor = Color.Green;
             window.Draw(shape);
+        }
+
+        public Body(Vector position, double mass, double radius, Vector momentum)
+        {
+            Position = position;
+            Mass = mass;
+            Momentum = momentum;
         }
     }
 }

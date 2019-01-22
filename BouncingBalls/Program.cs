@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Windows;
 using SFML.Window;
 using SFML.Graphics;
 using SFML.System;
@@ -11,6 +12,8 @@ namespace BouncingBalls
         {
             List<Wall> walls = new List<Wall>();
             List<Body> bodies = new List<Body>();
+            
+            bodies.Add(new Body(new Vector(10, 10), 0.058, 10, new Vector(0, 0)));
 
             ContextSettings contextSettings = new ContextSettings();
             contextSettings.DepthBits = 32;
@@ -20,6 +23,8 @@ namespace BouncingBalls
 
             while (window.IsOpen)
             {
+                window.DispatchEvents();
+            
                 //Physics logic
                 UpdatePhysics(bodies, walls, C.ElapsedTime.AsSeconds());
 
@@ -34,13 +39,16 @@ namespace BouncingBalls
         {
             foreach (Body b in bodies)
             {
+                //Gravity
+                b.ApplyForce(new Vector(0, -9.81) * b.Mass, time);
+                
                 b.UpdateCollide(time,true, 4, walls, bodies);
             }
         }
 
         public static void Draw(RenderWindow window, List<Body> bodies, List<Wall> walls)
         {
-            window.Clear(new Color(200, 200, 200));
+            window.Clear(new Color(230, 230, 230));
 
             foreach (Body b in bodies)
             {
