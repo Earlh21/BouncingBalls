@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using SFML.System;
 using System.Windows;
+using SFML.Graphics;
 
 namespace BouncingBalls
 {
@@ -249,6 +251,14 @@ namespace BouncingBalls
                     Collide(b);
                 }
             }
+        }
+
+        public void Draw(RenderWindow window)
+        {
+            CircleShape shape = new CircleShape((float)radius);
+            shape.Position = new Vector2f((float)Position.X, (float)Position.Y);
+            shape.FillColor = Color.Green;
+            window.Draw(shape);
         }
     }
 }
