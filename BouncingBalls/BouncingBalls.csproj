@@ -68,6 +68,7 @@
     <Content Include="CSFML\csfml-graphics-2.dll" />
     <Content Include="CSFML\csfml-system-2.dll" />
     <Content Include="CSFML\csfml-window-2.dll" />
+    <Content Include="rainbow.frag" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

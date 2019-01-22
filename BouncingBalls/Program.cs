@@ -14,8 +14,8 @@ namespace BouncingBalls
             List<Wall> walls = new List<Wall>();
             List<Body> bodies = new List<Body>();
 
-            bodies.Add(new Body(new Vector(0, 0), 0.058, 0.07, new Vector(0.02, 0)));
-            walls.Add(new Wall(new Vector(-2, -1.3), new Vector(4, 0.2)));
+            bodies.Add(new Body(new Vector(-2.5, 0), 0.058, 0.07, new Vector(0.1, 0)));
+            walls.Add(new Wall(new Vector(-4, -1), new Vector(8, 2)));
 
             ContextSettings contextSettings = new ContextSettings();
             contextSettings.DepthBits = 32;

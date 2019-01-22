@@ -18,12 +18,14 @@ namespace BouncingBalls
         public static double dynamic_viscosity = 1.8e-5;
 
         public static double cor = 0.8;
-        public static double friction = 0.01;
+        public static double friction = 0.3;
         
         public const double drag_coefficient = 0.47;
 
-        //If velocity is less than this, it will be set to 0 and drag will not be calculated
-        public const double speed_threshold = 1e-10;
+        //If velocity is less than this, it will be set to 0 and friction will not be calculated
+        public const double speed_threshold = 1e-5;
+
+        public const double spring_stiffness = 10;
         
         private double radius;
         private double radius2;
@@ -116,13 +118,25 @@ namespace BouncingBalls
             }
         }
 
+        private void ApplyFriction(double time)
+        {
+            if (Speed > speed_threshold)
+            {
+                ApplyForce(new Vector(Math.Sign(Momentum.X) * -9.81 * friction * Mass, 0), time);
+            }
+            else
+            {
+                Momentum = new Vector(0, 0);
+            }
+        }
+        
         /// <summary>
         /// Checks for collision with a Wall and applies appropriate collision physics if a collision is found
         /// </summary>
         /// <param name="wall">Wall to check</param>
         public void Collide(Wall wall)
         {
-            CollisionData collide_data = CheckCollide(wall);
+            CollisionData collide_data = CheckCollide(wall, radius);
             if (collide_data.CollisionType == CollisionData.CollideType.None)
             {
                 return;
@@ -130,13 +144,15 @@ namespace BouncingBalls
 
             if (collide_data.CollisionType == CollisionData.CollideType.Top || collide_data.CollisionType == CollisionData.CollideType.Bottom)
             {
-                Momentum = new Vector(Momentum.X * (1 - friction), Momentum.Y * -cor);
+                Momentum = new Vector(Momentum.X, Momentum.Y * -cor);
+                
                 Position += new Vector(0, collide_data.Displacement);
             }
 
             if (collide_data.CollisionType == CollisionData.CollideType.Left || collide_data.CollisionType == CollisionData.CollideType.Right)
             {
-                Momentum = new Vector(Momentum.X * -cor, Momentum.Y * (1 - friction));
+                Momentum = new Vector(Momentum.X * -cor, Momentum.Y);
+                
                 Position += new Vector(collide_data.Displacement, 0);
             }
         }
@@ -146,7 +162,7 @@ namespace BouncingBalls
         /// </summary>
         /// <param name="wall">Wall to check</param>
         /// <returns>Whether and where the Body is colliding with the Wall or not</returns>
-        private CollisionData CheckCollide(Wall wall)
+        private CollisionData CheckCollide(Wall wall, double radius)
         {
             //I hate rectangle collisions
             double bottom_point = Position.Y - radius;
@@ -189,7 +205,7 @@ namespace BouncingBalls
 
             return new CollisionData(0, CollisionData.CollideType.None);
         }
-
+        
         /// <summary>
         /// Applies a force for a specified amount of time
         /// </summary>
@@ -212,6 +228,24 @@ namespace BouncingBalls
             Rotation += AngularMomentum / Mass * time;
         }
 
+        private void GroundPhysics(List<Wall> walls, double time)
+        {
+            bool grounded = false;
+
+            foreach (Wall w in walls)
+            {
+                if (CheckCollide(w, radius * 1.1).CollisionType == CollisionData.CollideType.Bottom)
+                {
+                    grounded = true;
+                }
+            }
+
+            if (grounded)
+            {
+                ApplyFriction(time);
+            }
+        }
+
         /// <summary>
         /// Moves the Body with a specified number of sub-steps, checking for collisions along the way
         /// </summary>
@@ -220,6 +254,8 @@ namespace BouncingBalls
         /// <param name="precision">Amount of sub-steps to calculate</param>
         public void UpdateCollide(double time, bool air, int precision, List<Wall> walls, List<Body> bodies)
         {
+            GroundPhysics(walls, time);
+            
             for (int i = 0; i < precision; i++)
             {
                 Position += Momentum / Mass * time / precision;
