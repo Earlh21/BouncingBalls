@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
 using SFML.Window;
 using SFML.Graphics;
@@ -12,26 +13,32 @@ namespace BouncingBalls
         {
             List<Wall> walls = new List<Wall>();
             List<Body> bodies = new List<Body>();
-            
-            bodies.Add(new Body(new Vector(10, 10), 0.058, 10, new Vector(0, 0)));
+
+            bodies.Add(new Body(new Vector(0, 0), 0.058, 0.07, new Vector(0.02, 0)));
+            walls.Add(new Wall(new Vector(-2, -1.3), new Vector(4, 0.2)));
 
             ContextSettings contextSettings = new ContextSettings();
             contextSettings.DepthBits = 32;
 
             Clock C = new Clock();
-            RenderWindow window = new RenderWindow(new VideoMode(640, 480), "SFML window with OpenGL", Styles.Default, contextSettings);
+            RenderWindow window = new RenderWindow(new VideoMode(800, 600), "SFML window with OpenGL", Styles.Default,
+                contextSettings);
+            window.SetView(Camera.view);
+            
+            Camera.SetView(new View(new Vector2f(0,0), new Vector2f(8, 6f)), window);
 
+            C.Restart();
             while (window.IsOpen)
             {
                 window.DispatchEvents();
-            
+
                 //Physics logic
-                UpdatePhysics(bodies, walls, C.ElapsedTime.AsSeconds());
+                double time = C.ElapsedTime.AsSeconds();
+                C.Restart();
+                UpdatePhysics(bodies, walls, time);
 
                 //Drawing
                 Draw(window, bodies, walls);
-                
-                C.Restart();
             }
         }
 
@@ -41,18 +48,24 @@ namespace BouncingBalls
             {
                 //Gravity
                 b.ApplyForce(new Vector(0, -9.81) * b.Mass, time);
-                
-                b.UpdateCollide(time,true, 4, walls, bodies);
+
+                b.UpdateCollide(time, true, 4, walls, bodies);
             }
         }
 
         public static void Draw(RenderWindow window, List<Body> bodies, List<Wall> walls)
         {
-            window.Clear(new Color(230, 230, 230));
-
+            byte brightness = 230;
+            window.Clear(new Color(brightness, brightness, brightness));
+            
             foreach (Body b in bodies)
             {
                 b.Draw(window);
+            }
+
+            foreach (Wall w in walls)
+            {
+                w.Draw(window);
             }
 
             window.Display();

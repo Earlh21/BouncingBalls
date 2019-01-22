@@ -21,6 +21,9 @@ namespace BouncingBalls
         public static double friction = 0.01;
         
         public const double drag_coefficient = 0.47;
+
+        //If velocity is less than this, it will be set to 0 and drag will not be calculated
+        public const double speed_threshold = 1e-10;
         
         private double radius;
         private double radius2;
@@ -145,55 +148,46 @@ namespace BouncingBalls
         /// <returns>Whether and where the Body is colliding with the Wall or not</returns>
         private CollisionData CheckCollide(Wall wall)
         {
+            //I hate rectangle collisions
             double bottom_point = Position.Y - radius;
+            double right_point = Position.X + radius;
+            double left_point = Position.X - radius;
+            double top_point = Position.Y + radius;
+            
             if (bottom_point < wall.Position.Y && bottom_point > wall.Position.Y - wall.Size.Y)
             {
-                return new CollisionData(wall.Position.Y - bottom_point, CollisionData.CollideType.Bottom);
+                if (right_point > wall.Position.X && left_point < wall.Position.X + wall.Size.X)
+                {
+                    return new CollisionData(wall.Position.Y - bottom_point, CollisionData.CollideType.Bottom);
+                }
             }
             
-            double right_point = Position.X + radius;
             if (right_point > wall.Position.X && right_point < wall.Position.X + wall.Size.X)
             {
-                return new CollisionData(wall.Position.X - right_point, CollisionData.CollideType.Right);
+                if (bottom_point < wall.Position.Y && top_point > wall.Position.Y + wall.Size.Y)
+                {
+                    return new CollisionData(wall.Position.X - right_point, CollisionData.CollideType.Right);
+                }
             }
-
-            double left_point = Position.X - radius;
+            
             if (left_point < wall.Position.X + wall.Size.X && left_point > wall.Position.X)
             {
-                return new CollisionData(wall.Position.X + wall.Size.X - left_point, CollisionData.CollideType.Left);
+                if (bottom_point < wall.Position.Y && top_point > wall.Position.Y + wall.Size.Y)
+                {
+                    return new CollisionData(wall.Position.X + wall.Size.X - left_point,
+                        CollisionData.CollideType.Left);
+                }
             }
 
-            double top_point = Position.Y + radius;
             if (top_point > wall.Position.Y + wall.Size.Y && top_point < wall.Position.Y)
             {
-                return new CollisionData(wall.Position.Y + wall.Size.Y - top_point, CollisionData.CollideType.Top);
+                if (right_point > wall.Position.X && left_point < wall.Position.X + wall.Size.X)
+                {
+                    return new CollisionData(wall.Position.Y + wall.Size.Y - top_point, CollisionData.CollideType.Top);
+                }
             }
 
             return new CollisionData(0, CollisionData.CollideType.None);
-        }
-
-        /// <summary>
-        /// Applies drag to the ball for a specified amount of time
-        /// </summary>
-        /// <param name="time">Amount of time to apply drag</param>
-        private void ApplyDrag(double time)
-        {
-            double force;
-            
-            if (ReynoldsNumber > 1.0f)
-            {
-                //Drag equation
-                force = air_density * drag_coefficient * Area * Speed2;
-                
-            }
-            else
-            {
-                //Stokes' law
-                force = 6 * (double) Math.PI * dynamic_viscosity * radius * Speed;
-            }
-            
-            
-            ApplyForce(Velocity.Unit() * -1 * force, time);
         }
 
         /// <summary>
@@ -214,11 +208,6 @@ namespace BouncingBalls
         /// <param name="air">Whether to calculate air resistance or not</param>
         public void UpdatePosition(double time, bool air)
         {
-            if (air)
-            {
-                ApplyDrag(time);
-            }
-            
             Position += Momentum / Mass * time;
             Rotation += AngularMomentum / Mass * time;
         }
@@ -231,11 +220,6 @@ namespace BouncingBalls
         /// <param name="precision">Amount of sub-steps to calculate</param>
         public void UpdateCollide(double time, bool air, int precision, List<Wall> walls, List<Body> bodies)
         {
-            if (air)
-            {
-                ApplyDrag(time);
-            }
-            
             for (int i = 0; i < precision; i++)
             {
                 Position += Momentum / Mass * time / precision;
@@ -255,8 +239,8 @@ namespace BouncingBalls
 
         public void Draw(RenderWindow window)
         {
-            CircleShape shape = new CircleShape((float)radius * 100);
-            shape.Position = new Vector2f((float)Position.X, (float)Position.Y) * 100;
+            CircleShape shape = new CircleShape((float)radius);
+            shape.Position = new Vector2f((float)(Position.X - radius), -(float)(Position.Y + radius));
             shape.FillColor = Color.Green;
             window.Draw(shape);
         }
@@ -266,6 +250,7 @@ namespace BouncingBalls
             Position = position;
             Mass = mass;
             Momentum = momentum;
+            Radius = radius;
         }
     }
 }
