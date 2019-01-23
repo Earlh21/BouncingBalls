@@ -19,7 +19,6 @@ namespace BouncingBalls
         public static double dynamic_viscosity = 1.8e-5;
 
         public static double cor = 0.8;
-        public static double friction = 0.3;
         
         public const double drag_coefficient = 0.47;
 
@@ -37,6 +36,8 @@ namespace BouncingBalls
                 radius_squared = (double)Math.Pow(radius, 2);
             }
         }
+        
+        public double Friction { get; set; }
         
         public double RadiusSquared
         {
@@ -105,6 +106,36 @@ namespace BouncingBalls
 
             Momentum = normal_momentum * -cor + tangent_momentum;
         }
+
+        private void Collide(Polygon polygon)
+        {
+            CollisionData? col = CheckCollide(polygon, radius);
+            if (col != null)
+            {
+                Collide((CollisionData)col);
+            }
+        }
+
+        private void Collide(Ball ball)
+        {
+            CollisionData? col = CheckCollide(ball, radius);
+            if (col != null)
+            {
+                Position += col.Value.Displacement;
+                Collide((CollisionData)col);
+                ball.Collide(new CollisionData(new Vector(0, 0), col.Value.Angle + Math.PI));
+            }
+        }
+        
+        private CollisionData? CheckCollide(Ball ball, double radius)
+        {
+            if (RadiusSquared + ball.RadiusSquared > DistanceSquared(ball.Position))
+            {
+                return new CollisionData(Position - ball.Position, Position.AngleTo(ball.Position));
+            }
+
+            return null;
+        }
         
         private CollisionData? CheckCollide(Polygon polygon, double radius)
         {
@@ -137,7 +168,7 @@ namespace BouncingBalls
             if (distance2 < radius_squared)
             {
                 double distance = Distance(point);
-                double angle = Math.Atan2(Position.Y - point.Y, Position.X - point.X);
+                double angle = Position.AngleTo(point);
                 return new CollisionData((Position - point).Unit() * (radius - distance), angle);
             }
 
@@ -175,6 +206,8 @@ namespace BouncingBalls
             CollisionData? col = null;
             
             Position -= new Vector(0, radius * 0.1);
+
+            double friction = 0;
             
             foreach (Polygon polygon in polygons)
             {
@@ -183,6 +216,7 @@ namespace BouncingBalls
                     col = CheckCollide(l, radius);
                     if (col != null)
                     {
+                        friction = polygon.Friction;
                         break;
                     }
                 }
@@ -242,6 +276,11 @@ namespace BouncingBalls
 
             ApplyForce(new Vector(0, -9.81) * Mass, time);
         }
+
+        public static void Collide(Ball a, Ball b)
+        {
+            
+        }
         
         /// <summary>
         /// Moves the Body with a specified number of sub-steps, checking for collisions along the way
@@ -249,7 +288,7 @@ namespace BouncingBalls
         /// <param name="time">Amount of time to move</param>
         /// <param name="air">Whether to calculate air resistance or not</param>
         /// <param name="precision">Amount of sub-steps to calculate</param>
-        public void UpdateCollide(double time, bool air, int precision, List<Polygon> polygons, List<Ball> bodies)
+        public void UpdateCollide(double time, bool air, int precision, List<Polygon> polygons, List<Ball> balls)
         {
             DoFriction(polygons, time);
             DoGravity(polygons, time);
@@ -258,10 +297,14 @@ namespace BouncingBalls
             {
                 foreach (Polygon polygon in polygons)
                 {
-                    CollisionData? col = CheckCollide(polygon, radius);
-                    if (col != null)
+                    Collide(polygon);
+                }
+
+                foreach (Ball ball in balls)
+                {
+                    if (ball != this)
                     {
-                        Collide((CollisionData)col);
+                        Collide(ball);
                     }
                 }
                 
@@ -278,12 +321,13 @@ namespace BouncingBalls
             window.Draw(shape);
         }
 
-        public Ball(Vector position, double mass, double radius, Vector momentum)
+        public Ball(Vector position, double mass, double radius, Vector momentum, double friction)
         {
             Position = position;
             Mass = mass;
             Momentum = momentum;
             Radius = radius;
+            Friction = friction;
         }
     }
 }

@@ -18,6 +18,8 @@ namespace BouncingBalls
             get { return lines; }
         }
 
+        public double Friction { get; set; }
+
         public List<Vector> Points
         {
             get { return points;}
@@ -32,14 +34,16 @@ namespace BouncingBalls
             }
         }
 
-        public Polygon()
+        public Polygon(double friction)
         {
             points = new List<Vector>();
+            Friction = friction;
         }
         
-        public Polygon(List<Vector> points)
+        public Polygon(double friction, List<Vector> points)
         {
             Points = points;
+            Friction = friction;
         }
 
         private Line GetLine(int index)

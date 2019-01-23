@@ -14,19 +14,20 @@ namespace BouncingBalls
             List<Polygon> polygons = new List<Polygon>();
             List<Ball> bodies = new List<Ball>();
 
-            bodies.Add(new Ball(new Vector(-1, 3), 0.058, 0.07, new Vector(0, -1)));
+            bodies.Add(new Ball(new Vector(0.1, 3), 0.058, 0.07, new Vector(0, 0), 0.1));
+            bodies.Add(new Ball(new Vector(0, 2), 0.058, 0.07, new Vector(0, 0.1), 0.1));
 
             List<Vector> points = new List<Vector>();
             points.Add(new Vector(-400, 300));
             points.Add(new Vector(-400, -3));
             points.Add(new Vector(0, -3));
-            polygons.Add(new Polygon(points));
+            polygons.Add(new Polygon(0.1, points));
             
             List<Vector> points2 = new List<Vector>();
             points.Add(new Vector(400, 300));
             points.Add(new Vector(400, -3));
             points.Add(new Vector(0, -3));
-            polygons.Add(new Polygon(points));
+            polygons.Add(new Polygon(0.1, points));
 
             ContextSettings contextSettings = new ContextSettings();
             contextSettings.DepthBits = 32;
@@ -57,7 +58,7 @@ namespace BouncingBalls
         {
             foreach (Ball b in bodies)
             {
-                b.UpdateCollide(time, true, 4, polygons, bodies);
+                b.UpdateCollide(time, true, 2, polygons, bodies);
             }
         }
 

@@ -35,5 +35,10 @@ namespace BouncingBalls
         {
             return v.Project(MathUtil.VectorFromAngle(angle));
         }
+
+        public static double AngleTo(this Vector v, Vector v2)
+        {
+            return Math.Atan2(v.Y - v2.Y, v.X - v2.X);
+        }
     }
 }
