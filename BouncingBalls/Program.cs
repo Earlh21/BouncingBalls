@@ -57,7 +57,7 @@ namespace BouncingBalls
         {
             foreach (Ball b in bodies)
             {
-                b.UpdateCollide(time, true, 2, polygons, bodies);
+                b.UpdateCollide(time, true, 4, polygons, bodies);
             }
         }
 
