@@ -12,6 +12,7 @@ namespace BouncingBalls
     /// </summary>
     public class Ball
     {
+        //TODO: Make some of these constants instance values instead
         
         //Air values
         public static double air_density = 1.2;
