@@ -11,11 +11,16 @@ namespace BouncingBalls
     {
         public static void Main(string[] args)
         {
-            List<Wall> walls = new List<Wall>();
-            List<Body> bodies = new List<Body>();
+            List<Polygon> polygons = new List<Polygon>();
+            List<Ball> bodies = new List<Ball>();
 
-            bodies.Add(new Body(new Vector(-2.5, 0), 0.058, 0.07, new Vector(0.1, 0)));
-            walls.Add(new Wall(new Vector(-4, -1), new Vector(8, 2)));
+            bodies.Add(new Ball(new Vector(-3.9, 2), 0.058, 0.07, new Vector(0, 0)));
+
+            List<Vector> points = new List<Vector>();
+            points.Add(new Vector(-4, 1));
+            points.Add(new Vector(-4, -3));
+            points.Add(new Vector(2, -2));
+            polygons.Add(new Polygon(points));
 
             ContextSettings contextSettings = new ContextSettings();
             contextSettings.DepthBits = 32;
@@ -35,37 +40,34 @@ namespace BouncingBalls
                 //Physics logic
                 double time = C.ElapsedTime.AsSeconds();
                 C.Restart();
-                UpdatePhysics(bodies, walls, time);
+                UpdatePhysics(bodies, polygons, time);
 
                 //Drawing
-                Draw(window, bodies, walls);
+                Draw(window, bodies, polygons);
             }
         }
 
-        public static void UpdatePhysics(List<Body> bodies, List<Wall> walls, double time)
+        public static void UpdatePhysics(List<Ball> bodies, List<Polygon> polygons, double time)
         {
-            foreach (Body b in bodies)
+            foreach (Ball b in bodies)
             {
-                //Gravity
-                b.ApplyForce(new Vector(0, -9.81) * b.Mass, time);
-
-                b.UpdateCollide(time, true, 4, walls, bodies);
+                b.UpdateCollide(time, true, 2, polygons, bodies);
             }
         }
 
-        public static void Draw(RenderWindow window, List<Body> bodies, List<Wall> walls)
+        public static void Draw(RenderWindow window, List<Ball> bodies, List<Polygon> polygons)
         {
             byte brightness = 230;
             window.Clear(new Color(brightness, brightness, brightness));
             
-            foreach (Body b in bodies)
+            foreach (Ball b in bodies)
             {
                 b.Draw(window);
             }
 
-            foreach (Wall w in walls)
+            foreach (Polygon p in polygons)
             {
-                w.Draw(window);
+                p.DrawOutline(window);
             }
 
             window.Display();

@@ -1,32 +1,26 @@
+using System.Windows;
+
 namespace BouncingBalls
 {
     public struct CollisionData
     {
-        public enum CollideType
-        {
-            Left,
-            Top,
-            Bottom,
-            Right,
-            None
-        };
-
-        private CollideType collide_type;
-        private double displacement;
+        private double angle;
+        private Vector displacement;
         
-        public CollideType CollisionType
+        public double Angle
         {
-            get { return collide_type; }
+            get { return angle; }
         }
-        public double Displacement
+        
+        public Vector Displacement
         {
             get { return displacement; }
         }
 
-        public CollisionData(double displacement, CollideType collide_type)
+        public CollisionData(Vector displacement, double angle)
         {
             this.displacement = displacement;
-            this.collide_type = collide_type;
+            this.angle = angle;
         }
     }
 }
