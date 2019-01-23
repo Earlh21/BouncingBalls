@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Net.Sockets;
 using SFML.System;
 using System.Windows;
 using SFML.Graphics;
@@ -121,9 +122,7 @@ namespace BouncingBalls
             CollisionData? col = CheckCollide(ball, radius);
             if (col != null)
             {
-                Position += col.Value.Displacement;
-                Collide((CollisionData)col);
-                ball.Collide(new CollisionData(new Vector(0, 0), col.Value.Angle + Math.PI));
+                ResolveCollision(this, ball);
             }
         }
         
@@ -277,9 +276,29 @@ namespace BouncingBalls
             ApplyForce(new Vector(0, -9.81) * Mass, time);
         }
 
-        public static void Collide(Ball a, Ball b)
+        private static Vector GetNewV(Ball a, Ball b)
         {
-            
+            double first = 2 * b.Mass / (a.Mass + b.Mass);
+            double second = (a.Velocity - b.Velocity) * (a.Position - b.Position) / a.DistanceSquared(b.Position);
+            Vector third = a.Position - b.Position;
+            return cor * first * second * third;
+        }
+        
+        public static void ResolveCollision(Ball a, Ball b)
+        {
+            Vector displace = b.Position - a.Position;
+            Vector displace_unit = displace.Unit();
+            double overlap = a.Distance(b.Position) - (a.radius + b.radius);
+
+            double ratio = a.Mass / (a.Mass + b.Mass);
+            a.Position += overlap * displace_unit * (1 - ratio);
+            b.Position -= overlap * displace_unit * (ratio);
+
+            Vector new_v_a = a.Velocity - GetNewV(a, b);
+            Vector new_v_b = b.Velocity - GetNewV(b, a);
+
+            a.Momentum = new_v_a * a.Mass;
+            b.Momentum = new_v_b * b.Mass;
         }
         
         /// <summary>

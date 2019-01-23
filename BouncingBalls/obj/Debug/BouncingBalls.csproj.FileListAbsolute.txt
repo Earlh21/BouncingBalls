@@ -7,3 +7,10 @@ C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\bin\Debug\sfmlnet-w
 C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.csprojResolveAssemblyReference.cache
 C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.exe
 C:\Users\Idrialite\RiderProjects\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.pdb
+C:\Users\Idrialite\Projects\C#\BouncingBalls\BouncingBalls\bin\Debug\BouncingBalls.exe
+C:\Users\Idrialite\Projects\C#\BouncingBalls\BouncingBalls\bin\Debug\BouncingBalls.pdb
+C:\Users\Idrialite\Projects\C#\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.csprojAssemblyReference.cache
+C:\Users\Idrialite\Projects\C#\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.csproj.CoreCompileInputs.cache
+C:\Users\Idrialite\Projects\C#\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.csproj.CopyComplete
+C:\Users\Idrialite\Projects\C#\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.exe
+C:\Users\Idrialite\Projects\C#\BouncingBalls\BouncingBalls\obj\Debug\BouncingBalls.pdb

@@ -12,23 +12,32 @@ namespace BouncingBalls
         public static void Main(string[] args)
         {
             List<Polygon> polygons = new List<Polygon>();
-            List<Ball> bodies = new List<Ball>();
-
-            bodies.Add(new Ball(new Vector(0.1, 3), 0.058, 0.07, new Vector(0, 0), 0.1));
-            bodies.Add(new Ball(new Vector(0, 2), 0.058, 0.07, new Vector(0, 0.1), 0.1));
+            List<Ball> balls = new List<Ball>();
 
             List<Vector> points = new List<Vector>();
-            points.Add(new Vector(-400, 300));
-            points.Add(new Vector(-400, -3));
-            points.Add(new Vector(0, -3));
+            points.Add(new Vector(-400, 400));
+            points.Add(new Vector(-400, -(1.5 * 5 / 2)));
+            points.Add(new Vector(0, -(1.5 * 5 / 2)));
             polygons.Add(new Polygon(0.1, points));
             
             List<Vector> points2 = new List<Vector>();
-            points.Add(new Vector(400, 300));
-            points.Add(new Vector(400, -3));
-            points.Add(new Vector(0, -3));
-            polygons.Add(new Polygon(0.1, points));
+            points2.Add(new Vector(400, 400));
+            points2.Add(new Vector(400, -1.5 * 5 / 2));
+            points2.Add(new Vector(0, -1.5 * 5 / 2));
+            polygons.Add(new Polygon(0.1, points2));
 
+            Random R = new Random();
+            
+            for (int i = 0; i < 20; i++)
+            {
+                for (int j = 0; j < 2; j++)
+                {
+                    Vector position = new Vector(-4 + i * 0.2, 1.5 * 5 / 2 - 0.8 + j * 0.2);
+                    RandomBall(balls, position, R);
+                }
+            }
+            
+            
             ContextSettings contextSettings = new ContextSettings();
             contextSettings.DepthBits = 32;
 
@@ -37,8 +46,9 @@ namespace BouncingBalls
                 contextSettings);
             window.SetView(Camera.view);
             
-            Camera.SetView(new View(new Vector2f(0,0), new Vector2f(8, 6f)), window);
+            Camera.SetView(new View(new Vector2f(0,0), new Vector2f(2, 1.5f) * 5), window);
 
+            double max_time = 1.0 / 60.0;
             C.Restart();
             while (window.IsOpen)
             {
@@ -46,19 +56,33 @@ namespace BouncingBalls
 
                 //Physics logic
                 double time = C.ElapsedTime.AsSeconds();
+                if (time > max_time)
+                {
+                    time = max_time;
+                }
                 C.Restart();
-                UpdatePhysics(bodies, polygons, time);
+                UpdatePhysics(balls, polygons, time);
 
                 //Drawing
-                Draw(window, bodies, polygons);
+                Draw(window, balls, polygons);
             }
         }
 
+        public static void RandomBall(List<Ball> balls, Vector position, Random R)
+        {
+            double range = 1;
+            double t = (R.NextDouble() - 0.5) * 2;
+            double t2 = (R.NextDouble() - 0.5) * 2;
+            Vector momentum = new Vector(t, t2) * range;
+            
+            balls.Add(new Ball(position, 0.058, 0.1, momentum, 0.1));
+        }
+            
         public static void UpdatePhysics(List<Ball> bodies, List<Polygon> polygons, double time)
         {
             foreach (Ball b in bodies)
             {
-                b.UpdateCollide(time, true, 2, polygons, bodies);
+                b.UpdateCollide(time, true, 4, polygons, bodies);
             }
         }
 
