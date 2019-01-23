@@ -14,7 +14,7 @@ namespace BouncingBalls
             List<Polygon> polygons = new List<Polygon>();
             List<Ball> bodies = new List<Ball>();
 
-            bodies.Add(new Ball(new Vector(0, 3), 0.058, 0.07, new Vector(0.5, 0)));
+            bodies.Add(new Ball(new Vector(0, 3), 0.058, 0.07, new Vector(0.3, 0)));
 
             List<Vector> points = new List<Vector>();
             points.Add(new Vector(-4, 3));

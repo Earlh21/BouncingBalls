@@ -22,8 +22,6 @@ namespace BouncingBalls
         
         public const double drag_coefficient = 0.47;
 
-        public const double speed_threshold = 5e-1;
-
         public const double spring_stiffness = 10;
         
         private double radius;
@@ -96,18 +94,6 @@ namespace BouncingBalls
         }
 
         public Vector GravityForce {get { return new Vector(0, -9.81) * Mass;}}
-        
-        private void ApplyFriction(CollisionData collision_data, double time)
-        {
-            if (Speed > speed_threshold)
-            {
-                ApplyForce(new Vector(Math.Sign(Momentum.X) * -9.81 * friction * Mass, 0), time);
-            }
-            else
-            {
-                Momentum = new Vector(0, 0);
-            }
-        }
         
         private void Collide(CollisionData collision_data)
         {
