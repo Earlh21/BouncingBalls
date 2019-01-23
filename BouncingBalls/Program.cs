@@ -14,12 +14,18 @@ namespace BouncingBalls
             List<Polygon> polygons = new List<Polygon>();
             List<Ball> bodies = new List<Ball>();
 
-            bodies.Add(new Ball(new Vector(-3.9, 2), 0.058, 0.07, new Vector(0, 0)));
+            bodies.Add(new Ball(new Vector(0, 3), 0.058, 0.07, new Vector(0.5, 0)));
 
             List<Vector> points = new List<Vector>();
-            points.Add(new Vector(-4, 1));
+            points.Add(new Vector(-4, 3));
             points.Add(new Vector(-4, -3));
-            points.Add(new Vector(2, -2));
+            points.Add(new Vector(0, -3));
+            polygons.Add(new Polygon(points));
+            
+            List<Vector> points2 = new List<Vector>();
+            points.Add(new Vector(4, 3));
+            points.Add(new Vector(4, -3));
+            points.Add(new Vector(0, -3));
             polygons.Add(new Polygon(points));
 
             ContextSettings contextSettings = new ContextSettings();

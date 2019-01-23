@@ -17,7 +17,7 @@ namespace BouncingBalls
         public static double air_density = 1.2;
         public static double dynamic_viscosity = 1.8e-5;
 
-        public static double cor = 0.5;
+        public static double cor = 0.8;
         public static double friction = 0.3;
         
         public const double drag_coefficient = 0.47;
