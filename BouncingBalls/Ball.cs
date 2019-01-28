@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Sockets;
+using System.Reflection.Emit;
 using SFML.System;
 using System.Windows;
 using SFML.Graphics;
@@ -34,7 +35,7 @@ namespace BouncingBalls
             set
             {
                 radius = value;
-                radius_squared = (double)Math.Pow(radius, 2);
+                radius_squared = Math.Pow(radius, 2);
             }
         }
         
@@ -52,7 +53,7 @@ namespace BouncingBalls
 
         public double Area
         {
-            get { return (double)Math.PI * radius_squared; }
+            get { return Math.PI * radius_squared; }
         }
 
         public double Speed
@@ -110,7 +111,7 @@ namespace BouncingBalls
 
         private void Collide(Polygon polygon)
         {
-            CollisionData? col = CheckCollide(polygon, radius);
+            CollisionData col = CheckCollide(polygon, radius);
             if (col != null)
             {
                 Collide((CollisionData)col);
@@ -119,16 +120,16 @@ namespace BouncingBalls
 
         private void Collide(Ball ball)
         {
-            CollisionData? col = CheckCollide(ball, radius);
+            CollisionData col = CheckCollide(ball, radius);
             if (col != null)
             {
                 ResolveCollision(this, ball);
             }
         }
         
-        private CollisionData? CheckCollide(Ball ball, double radius)
+        private CollisionData CheckCollide(Ball ball, double radius)
         {
-            if (RadiusSquared + ball.RadiusSquared > DistanceSquared(ball.Position))
+            if (Math.Pow(Radius + ball.Radius, 2) > DistanceSquared(ball.Position))
             {
                 return new CollisionData(Position - ball.Position, Position.AngleTo(ball.Position));
             }
@@ -136,11 +137,11 @@ namespace BouncingBalls
             return null;
         }
         
-        private CollisionData? CheckCollide(Polygon polygon, double radius)
+        private CollisionData CheckCollide(Polygon polygon, double radius)
         {
             foreach (Vector p in polygon.Points)
             {
-                CollisionData? col = CheckCollide(p, radius);
+                CollisionData col = CheckCollide(p, radius);
                 if (col != null)
                 {
                     return col;
@@ -149,7 +150,7 @@ namespace BouncingBalls
 
             foreach (Line l in polygon.Lines)
             {
-                CollisionData? col = CheckCollide(l, radius);
+                CollisionData col = CheckCollide(l, radius);
                 
                 
                 if (col != null)
@@ -161,7 +162,7 @@ namespace BouncingBalls
             return null;
         }
 
-        private CollisionData? CheckCollide(Vector point, double radius)
+        private CollisionData CheckCollide(Vector point, double radius)
         {
             double distance2 = DistanceSquared(point);
             if (distance2 < radius_squared)
@@ -174,7 +175,7 @@ namespace BouncingBalls
             return null;
         }
 
-        private CollisionData? CheckCollide(Line line, double radius)
+        private CollisionData CheckCollide(Line line, double radius)
         {
             Vector closest_point = line.GetClosestPoint(Position);
             return CheckCollide(closest_point, radius);
@@ -192,7 +193,24 @@ namespace BouncingBalls
 
         public void Slow(double force, double time)
         {
+            int sign_x = Math.Sign(Momentum.X);
+            int sign_y = Math.Sign(Momentum.Y);
             ApplyForce(-Momentum.Unit() * force, time);
+
+            double new_mom_x = Momentum.X;
+            double new_mom_y = Momentum.Y;
+            
+            if(Math.Sign(Momentum.X) != sign_x)
+            {
+                new_mom_x = 0;
+            }
+
+            if (Math.Sign(Momentum.Y) != sign_y)
+            {
+                new_mom_y = 0;
+            }
+            
+            Momentum = new Vector(new_mom_x, new_mom_y);
         }
 
         private Vector NormalForce(double angle)
@@ -202,38 +220,31 @@ namespace BouncingBalls
         
         private void DoFriction(List<Polygon> polygons, double time)
         {
-            CollisionData? col = null;
-            
-            Position -= new Vector(0, radius * 0.1);
+            CollisionData col = null;
 
             double friction = 0;
             
             foreach (Polygon polygon in polygons)
             {
-                foreach (Line l in polygon.Lines)
+                col = CheckCollide(polygon, radius * 1.2);
+                if (col != null)
                 {
-                    col = CheckCollide(l, radius);
-                    if (col != null)
-                    {
-                        friction = polygon.Friction;
-                        break;
-                    }
+                    friction = polygon.Friction;
+                    break;
                 }
             }
-
-            Position += new Vector(0, radius * 0.1);
             
             if (col == null)
             {
                 return;
             }
-
-            Slow(NormalForce(col.Value.Angle + Math.PI).Length * friction, time);
+            
+            Slow(NormalForce(col.Angle + Math.PI).Length * friction, time);
         }
 
         private void DoGravity(List<Polygon> polygons, double time)
         {
-            CollisionData? col = null;
+            CollisionData col = null;
             
             foreach (Polygon polygon in polygons)
             {
@@ -249,7 +260,7 @@ namespace BouncingBalls
 
             if (col != null)
             {
-                CollisionData c = (CollisionData) col;
+                CollisionData c = col;
 
                 double angle = c.Angle;
                 while (angle < 0)

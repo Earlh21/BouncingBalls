@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using SFML.Graphics;
 using SFML.System;
 
 namespace BouncingBalls
@@ -8,7 +9,13 @@ namespace BouncingBalls
     {
         public static Vector Unit(this Vector v)
         {
-            return v / v.Length;
+            double l = v.Length;
+            
+            if (v.Length == 0)
+            {
+                return new Vector(0, 0);
+            }
+            return v / l;
         }
 
         public static double Angle(this Vector v)
@@ -39,6 +46,16 @@ namespace BouncingBalls
         public static double AngleTo(this Vector v, Vector v2)
         {
             return Math.Atan2(v.Y - v2.Y, v.X - v2.X);
+        }
+
+        public static Vector Vector(this Vector2f v)
+        {
+            return new Vector(v.X, v.Y);
+        }
+
+        public static Vector Vector(this Vector2i v)
+        {
+            return new Vector(v.X, v.Y);
         }
     }
 }

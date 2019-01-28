@@ -2,7 +2,7 @@ using System.Windows;
 
 namespace BouncingBalls
 {
-    public struct CollisionData
+    public class CollisionData
     {
         private double angle;
         private Vector displacement;
