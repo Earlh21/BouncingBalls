@@ -12,6 +12,8 @@ namespace BouncingBalls
         private List<Vector> points;
         
         private List<Line> lines;
+
+        private Rect AABB;
         
         public List<Line> Lines
         {
@@ -29,9 +31,40 @@ namespace BouncingBalls
                 lines = new List<Line>();
                 for (int i = 0, w = points.Count; i < w; i++)
                 {
-                    lines.Add(GetLine(i));
+                    lines.Add(GenerateLine(i));
                 }
             }
+        }
+
+        private Rect GenerateAABB()
+        {
+            Vector top_right = new Vector(Double.MinValue, Double.MinValue);
+            Vector bottom_left = new Vector(Double.MaxValue, Double.MaxValue);
+
+            foreach (Point p in points)
+            {
+                if (p.X > top_right.X)
+                {
+                    top_right.X = p.X;
+                }
+
+                if (p.Y > top_right.Y)
+                {
+                    top_right.Y = p.Y;
+                }
+
+                if (p.X < bottom_left.X)
+                {
+                    bottom_left.X = p.X;
+                }
+
+                if (p.Y < bottom_left.Y)
+                {
+                    bottom_left.Y = p.Y;
+                }
+            }
+            
+            return new Rect();
         }
 
         public Polygon(double friction)
@@ -46,7 +79,7 @@ namespace BouncingBalls
             Friction = friction;
         }
 
-        private Line GetLine(int index)
+        private Line GenerateLine(int index)
         {
             if (index > Points.Count - 1 || index < 0)
             {
