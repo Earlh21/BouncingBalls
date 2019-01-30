@@ -16,6 +16,7 @@ namespace BouncingBalls
     {
         public static List<Polygon> polygons;
         public static List<Ball> balls;
+        public static List<IResolvable> pairs;
 
         public static bool throwing = false;
         public static Vector throw_start;
@@ -26,12 +27,24 @@ namespace BouncingBalls
         {
             polygons = new List<Polygon>();
             balls = new List<Ball>();
+            pairs = new List<IResolvable>();
             throw_start = new Vector(0,0);
 
+            Random R = new Random();
+            
+            for (int i = 0; i < 10; i++)
+            {
+                for (int j = 0; j < 20; j++)
+                {
+                    //Vector position = new Vector(-2 + i * 0.2, j * 0.3);
+                    //RandomBall(balls, position, R);
+                }
+            }
+            
             string exe_path = AppDomain.CurrentDomain.BaseDirectory;
             string file_path = exe_path + "\\scene.txt";
             LoadScene(polygons, file_path);
-
+            
             ContextSettings contextSettings = new ContextSettings();
             contextSettings.DepthBits = 32;
 
@@ -89,10 +102,10 @@ namespace BouncingBalls
         
         public static void RandomBall(List<Ball> balls, Vector position, Random R)
         {
-            double range = 0.01;
+            double range = 0.2;
             double rrange = 0;
             double t = (R.NextDouble() - 0.5) * 2;
-            double t2 = R.NextDouble();
+            double t2 = (R.NextDouble() - 0.5) * 2;
             double t3 = (R.NextDouble() - 0.5) * 2;
             Vector momentum = new Vector(t, t2) * range;
             double density = 0.058 / (Math.PI * 0.1 * 0.1);
@@ -100,7 +113,7 @@ namespace BouncingBalls
             double area = Math.PI * radius * radius;
             double mass = density * area;
 
-            balls.Add(new Ball(position, mass, radius, momentum, 0.1));
+            balls.Add(new Ball(position, 0.058, 0.1, momentum, 0.1));
         }
 
         public static Vector MouseWorldPosition()
@@ -114,10 +127,43 @@ namespace BouncingBalls
         {
             foreach (Ball b in balls)
             {
-                b.UpdateCollide(time, true, 6, polygons, balls);
+                b.UpdateMove(false, time);
+                b.UpdateCollide(polygons, balls, pairs, time);
+                
             }
+
+            ResolveCollisions();
+            pairs.Clear();
         }
 
+        public static void ResolvePairs(List<IResolvable> pairs)
+        {
+            
+        }
+        
+        public static void ResolveCollisions()
+        {
+            int cores = Environment.ProcessorCount;
+            List<List<IResolvable>> splits = SplitList(pairs, cores);
+
+            List<Thread> threads = new List<Thread>();
+            
+            foreach (List<IResolvable> l in splits)
+            {
+                threads.Add();new Thread(delegate () {
+                    ResolvePairs(l);
+                }).Start();
+            }
+            
+            
+            foreach (IResolvable collision in pairs)
+            {
+                collision.ResolveCollision();
+            }
+
+            pairs.Clear();
+        }
+        
         public static void Draw(RenderWindow window)
         {
             byte brightness = 230;
@@ -161,6 +207,36 @@ namespace BouncingBalls
             }
 
             return new Polygon(Convert.ToDouble(data[0]), points_v);
+        }
+
+        public static List<List<IResolvable>> SplitList(List<IResolvable> pairs, int partitions)
+        {
+            int per_list = pairs.Count / partitions;
+            List < List < IResolvable >> splits = new List<List<IResolvable>>();
+
+            if (pairs.Count <= partitions)
+            {
+                for (int i = 0, w = pairs.Count; i < w; i++)
+                {
+                    splits.Add(pairs.GetRange(i, 1));
+                }
+
+                return splits;
+            }
+            
+            for (int i = 0; i < partitions; i++)
+            {
+                if (i == partitions - 1)
+                {
+                    splits.Add(pairs.GetRange(i * per_list, pairs.Count - i * per_list));
+                }
+                else
+                {
+                    splits.Add(pairs.GetRange(i * per_list, per_list));
+                }
+            }
+
+            return splits;
         }
 
         public static void LoadScene(List<Polygon> polygons, string file)

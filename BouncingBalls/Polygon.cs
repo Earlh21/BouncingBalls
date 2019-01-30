@@ -36,7 +36,7 @@ namespace BouncingBalls
             }
         }
 
-        private Rect GenerateAABB()
+        private Rectangle GenerateAABB()
         {
             Vector top_right = new Vector(Double.MinValue, Double.MinValue);
             Vector bottom_left = new Vector(Double.MaxValue, Double.MaxValue);
@@ -64,7 +64,7 @@ namespace BouncingBalls
                 }
             }
             
-            return new Rect();
+            return new Rectangle(bottom_left, top_right);
         }
 
         public Polygon(double friction)

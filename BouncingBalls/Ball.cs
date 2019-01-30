@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net.Sockets;
 using System.Reflection.Emit;
+using System.Threading;
 using SFML.System;
 using System.Windows;
 using SFML.Graphics;
@@ -13,9 +14,7 @@ namespace BouncingBalls
     /// Represents a 2D, physics-enabled ball
     /// </summary>
     public class Ball
-    {
-        //TODO: Make some of these constants instance values instead
-        
+    {  
         //Air values
         public static double air_density = 1.2;
         public static double dynamic_viscosity = 1.8e-5;
@@ -85,7 +84,7 @@ namespace BouncingBalls
         }
         public Vector Position { get; set; }
         public double Rotation { get; set; }
-
+        
         public double Distance(Vector point)
         {
             return (Position - point).Length;
@@ -96,36 +95,8 @@ namespace BouncingBalls
         {
             return (Position - point).LengthSquared;
         }
-
-        public Vector GravityForce {get { return new Vector(0, -9.81) * Mass;}}
         
-        private void Collide(CollisionData collision_data)
-        {
-            Position += collision_data.Displacement;
-
-            Vector normal_momentum = Momentum.Project(collision_data.Angle + Math.PI);
-            Vector tangent_momentum = Momentum.Project(collision_data.Angle + Math.PI / 2 * Math.Sign(Momentum.Angle() - collision_data.Angle));
-
-            Momentum = normal_momentum * -cor + tangent_momentum;
-        }
-
-        private void Collide(Polygon polygon)
-        {
-            CollisionData col = CheckCollide(polygon, radius);
-            if (col != null)
-            {
-                Collide((CollisionData)col);
-            }
-        }
-
-        private void Collide(Ball ball)
-        {
-            CollisionData col = CheckCollide(ball, radius);
-            if (col != null)
-            {
-                ResolveCollision(this, ball);
-            }
-        }
+        public Vector GravityForce {get { return new Vector(0, -9.81) * Mass;}}
         
         private CollisionData CheckCollide(Ball ball, double radius)
         {
@@ -135,6 +106,16 @@ namespace BouncingBalls
             }
 
             return null;
+        }
+
+        private bool CheckCollideBool(Ball ball, double radius)
+        {
+            if (Math.Pow(Radius + ball.Radius, 2) > DistanceSquared(ball.Position))
+            {
+                return true;
+            }
+
+            return false;
         }
         
         private CollisionData CheckCollide(Polygon polygon, double radius)
@@ -242,74 +223,9 @@ namespace BouncingBalls
             Slow(NormalForce(col.Angle + Math.PI).Length * friction, time);
         }
 
-        private void DoGravity(List<Polygon> polygons, double time)
+        private void DoGravity(double time)
         {
-            CollisionData col = null;
-            
-            foreach (Polygon polygon in polygons)
-            {
-                foreach (Line l in polygon.Lines)
-                {
-                    col = CheckCollide(l, radius * 1.1);
-                    if (col != null)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            if (col != null)
-            {
-                CollisionData c = col;
-
-                double angle = c.Angle;
-                while (angle < 0)
-                {
-                    angle += 2 * Math.PI;
-                }
-            
-                if (angle > Math.PI / 2 && angle < Math.PI)
-                {
-                    Vector direction = MathUtil.VectorFromAngle(angle + Math.PI / 2);
-                    
-                    ApplyForce(GravityForce.Project(direction), time);
-                    return;
-                }
-                else if(angle < Math.PI)
-                {
-                    Vector direction = MathUtil.VectorFromAngle(angle - Math.PI / 2);
-                    
-                    ApplyForce(GravityForce.Project(direction), time);
-                    return;
-                }
-            }
-
-            ApplyForce(new Vector(0, -9.81) * Mass, time);
-        }
-
-        private static Vector GetNewV(Ball a, Ball b)
-        {
-            double first = 2 * b.Mass / (a.Mass + b.Mass);
-            double second = (a.Velocity - b.Velocity) * (a.Position - b.Position) / a.DistanceSquared(b.Position);
-            Vector third = a.Position - b.Position;
-            return cor * first * second * third;
-        }
-        
-        public static void ResolveCollision(Ball a, Ball b)
-        {
-            Vector displace = b.Position - a.Position;
-            Vector displace_unit = displace.Unit();
-            double overlap = a.Distance(b.Position) - (a.radius + b.radius);
-
-            double ratio = a.Mass / (a.Mass + b.Mass);
-            a.Position += overlap * displace_unit * (1 - ratio);
-            b.Position -= overlap * displace_unit * (ratio);
-
-            Vector new_v_a = a.Velocity - GetNewV(a, b);
-            Vector new_v_b = b.Velocity - GetNewV(b, a);
-
-            a.Momentum = new_v_a * a.Mass;
-            b.Momentum = new_v_b * b.Mass;
+            ApplyForce(GravityForce, time);
         }
         
         /// <summary>
@@ -318,28 +234,36 @@ namespace BouncingBalls
         /// <param name="time">Amount of time to move</param>
         /// <param name="air">Whether to calculate air resistance or not</param>
         /// <param name="precision">Amount of sub-steps to calculate</param>
-        public void UpdateCollide(double time, bool air, int precision, List<Polygon> polygons, List<Ball> balls)
+        public void UpdateMove(bool air, double time)
+        {
+            DoGravity(time);
+            
+            Position += Momentum / Mass * time;
+            Rotation += AngularMomentum / Mass * time;
+        }
+
+        public void UpdateCollide(List<Polygon> polygons, List<Ball> balls, List<IResolvable> pairs, double time)
         {
             DoFriction(polygons, time);
-            DoGravity(polygons, time);
             
-            for (int i = 0; i < precision; i++)
+            foreach (Polygon polygon in polygons)
             {
-                foreach (Polygon polygon in polygons)
+                CollisionData c = CheckCollide(polygon, radius);
+                if (c != null)
                 {
-                    Collide(polygon);
+                    pairs.Add(new PointCollision(this, c));
                 }
+            }
 
-                foreach (Ball ball in balls)
+            foreach (Ball ball in balls)
+            {
+                if (ball != this)
                 {
-                    if (ball != this)
+                    if (CheckCollideBool(ball, radius))
                     {
-                        Collide(ball);
+                        pairs.Add(new BallPair(this, ball));
                     }
                 }
-                
-                Position += Momentum / Mass * time / precision;
-                Rotation += AngularMomentum / Mass * time / precision;
             }
         }
 
